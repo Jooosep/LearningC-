@@ -169,7 +169,7 @@
     <ClInclude Include="Utility.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EC.cpp" />
+    <ClCompile Include="lightning.cpp" />
     <ClCompile Include="loginWindow.cpp" />
     <ClCompile Include="modCalc.cpp" />
     <ClCompile Include="registerWindow.cpp" />

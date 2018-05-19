@@ -20,7 +20,7 @@
 
 
 
-int curveAddition()
+int lightningSimulation()
 {
 	int width = 1200;
 	int height = 800;
@@ -43,10 +43,10 @@ int curveAddition()
 	// let's define a view
 	sf::View view(sf::FloatRect(0, 0, width, height));
 
-
 	float sSize = 10.f;
 	float mSize = 14.f;
 	float lSize = 18.f;
+
 	//particle line
 	sf::Texture particleTexture;
 	particleTexture.loadFromFile("lightning.png");
@@ -116,25 +116,6 @@ int curveAddition()
 	std::vector<sf::Vector2f> routes;
 
 
-	//menu
-	gui::Menu menu(window);
-	menu.setPosition(0, 0);
-	gui::Theme::loadFont("Arial.ttf");
-	gui::Theme::textSize = 15;
-	gui::Theme::click.textColor = sf::Color(200, 200, 200);
-	gui::Theme::click.textColorHover = sf::Color(0, 255, 0);
-	gui::Theme::click.textColorFocus = sf::Color(255, 0, 0);
-	gui::Theme::input.textColor = sf::Color(150, 200, 205);
-	gui::Theme::input.textColorHover = sf::Color(205, 225, 228);
-	gui::Theme::input.textColorFocus = sf::Color(0, 255, 0);
-	gui::Theme::PADDING = 5.f;
-	gui::Theme::loadTexture("texture.png");
-
-
-
-	// vector for holding positions of random particles
-	std::vector<sf::Vector2i> particleVector(100000);
-
 	// vector holding positions to be drawn
 	std::vector<sf::Vector2i> drawVector;
 
@@ -153,31 +134,38 @@ int curveAddition()
 
 	float growth = 0.f;
 
-	const int numberOfWaypoints = 50;
+	const int numberOfWaypoints = 10;
 
 	int HorizontalWaypoint[numberOfWaypoints];
 
 	int VerticalWaypoint[numberOfWaypoints];
+
+	int HorizontalLeaps[numberOfWaypoints];
+
+	int VerticalLeaps[numberOfWaypoints];
 
 	int endPos = numberOfWaypoints - 1;
 
 	int random2 = 0;
 
 	int counter = 0;
-	 
-
-	int min_x = 0;
-	int max_x = 0;
 
 	int min_x2 = 0;
-	int max_x2 = 0;
+	int verticalLeap = 0;
+
+	int minHorizontalLeap = 0;
+	int maxHorizontalLeap = 0;
 
 	int min_add = 0;
-	int maxExtra_add = 0;
+	int max_add = 0;
+
+	const int minStartingX = 200;
+
+	int verticalEndPoint = 0;
 
 	while (window.isOpen())
 	{
-		//seed random with time
+
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -185,44 +173,59 @@ int curveAddition()
 			// Request for closing the window
 			if (event.type == sf::Event::Closed)
 				window.close();
+
 			if (event.type == sf::Event::KeyPressed)
 			{
-				//draw pixel in mouse position
+
 				if (event.key.code == sf::Keyboard::Space)
 				{
-					drawVector.push_back(sf::Vector2i(200 + (rand() % (int)(width - 400)), 0));
+					drawVector.push_back(sf::Vector2i(minStartingX + (rand() % (int)(width - minStartingX/2)), 0));
+					std::cout << "starting x: " << drawVector.back().x << std::endl;
 					if(GroundHit == -1)
 						GroundHit = 0;
 
-					int min_addition = int(1.f / numberOfWaypoints * height * 0.75f);
-					int extra_addition = int(1.f / numberOfWaypoints * height * 0.5f);
+					int min_y_addition = int(1.f / numberOfWaypoints * height * 0.9f);
+					int extra_y_addition = int(1.f / numberOfWaypoints * height * 0.2f);
 
-					VerticalWaypoint[0] = (1.f / numberOfWaypoints * height) - (1.f / numberOfWaypoints * height) / 4.f + rand() % (int((1.f / numberOfWaypoints * height))/2);
-					for (int i = 1; i < endPos; i++)
+					VerticalWaypoint[0] = min_y_addition + rand() % extra_y_addition;
+
+					for (int i = 1; i <= endPos; i++)
 					{
-						VerticalWaypoint[i] = VerticalWaypoint[i - 1] + min_addition + rand() % extra_addition;
+						VerticalWaypoint[i] = VerticalWaypoint[i - 1] + min_y_addition + rand() % extra_y_addition;
 					}
-					if (VerticalWaypoint[endPos - 1] >= 800)
-						VerticalWaypoint[endPos] = VerticalWaypoint[endPos - 1] + min_addition + rand() % extra_addition;
-					else
-						VerticalWaypoint[endPos] = 800;
 
-					HorizontalWaypoint[endPos] = drawVector.back().x - (3000/numberOfWaypoints) + rand() % (6000/numberOfWaypoints);
+					verticalEndPoint = VerticalWaypoint[endPos];
+
+					HorizontalWaypoint[endPos] = drawVector.back().x - (height) + rand() % (height * 2);
+
 					for (int i = endPos - 1; i > -1; i--)
 					{	
-						min_x2 = VerticalWaypoint[i + 1] - VerticalWaypoint[i];
-						min_x = drawVector.back().x - i*5;
-						max_x = drawVector.back().x + i*5;
-						if (min_x2 < abs(HorizontalWaypoint[i + 1] - min_x))
-							min_add = min_x2;
- 						if (abs(HorizontalWaypoint[i + 1] + min_x2) < max_x)
-							maxExtra_add = min_x2 + min_add;
+						verticalLeap = VerticalWaypoint[i + 1] - VerticalWaypoint[i];
+						std::cout << "vleap: " << verticalLeap << std::endl;
+						maxHorizontalLeap = (VerticalWaypoint[i] * 2) - (VerticalWaypoint[i] + (HorizontalWaypoint[i + 1] - drawVector.back().x));
+						minHorizontalLeap = (VerticalWaypoint[i] * 2) + (VerticalWaypoint[i] + (HorizontalWaypoint[i + 1] - drawVector.back().x));
 
-						if (maxExtra_add == 0)
-							maxExtra_add = -1;
+						min_add = - verticalLeap;
+						max_add = verticalLeap;
 
-						HorizontalWaypoint[i] = HorizontalWaypoint[i + 1] - min_add + rand() % maxExtra_add;
+ 						if (maxHorizontalLeap < verticalLeap)
+							max_add = maxHorizontalLeap;
+
+						if (minHorizontalLeap > -verticalLeap) 
+							min_add = minHorizontalLeap;
+
+						HorizontalWaypoint[i] = HorizontalWaypoint[i + 1] + rand() % (max_add - min_add + 1) + min_add;
+
+						HorizontalLeaps[i] = HorizontalWaypoint[i + 1] - HorizontalWaypoint[i];
+						std::cout << "hleap: " << HorizontalWaypoint[i + 1] - HorizontalWaypoint[i] << std::endl;
+						VerticalLeaps[i] = VerticalWaypoint[i + 1] - VerticalWaypoint[i];
 						
+					}
+
+					std::cout << drawVector.back().x << std::endl;
+					for (int i = 0; i < numberOfWaypoints; i++) {
+						std::cout << "horizontal " << i << " " << HorizontalLeaps[i] << std::endl;
+						std::cout << "vertical " << i << " " << VerticalLeaps[i] << std::endl;
 					}
 				}
 			}
@@ -284,11 +287,6 @@ int curveAddition()
 			mousePos = (sf::Vector2f(sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y) / zoom - sf::Vector2f(width / 2, height / 2) / zoom - camPos); // we store the current mouse position in this variable;
 
 			
-			int id = menu.onEvent(event);
-			switch (id)
-			{
-			
-			}
 		}
 		window.clear();
 
@@ -342,22 +340,30 @@ int curveAddition()
 			{
 				for (; verticalPos < VerticalWaypoint[i];)
 				{
-					std::cout << verticalPos << std::endl;
+					std::cout << "vertical pos: "<< verticalPos << " line: "<< __LINE__ << std::endl;
+					std::cout << "horizontal pos: " << drawVector.back().x << std::endl;
+					std::cout << "vertical target " << VerticalWaypoint[i] << std::endl;
+					std::cout << "horizontal target " << HorizontalWaypoint[i] << std::endl;
 					verticalPos = drawVector.back().y;
 					int random = rand() % 100;
 					//std::cout << "to move west" << abs(HorizontalWaypoint[i] - (drawVector.back().x - 1)) << "<=" << VerticalWaypoint[i] - verticalPos << std::endl;
 					//std::cout << "and" << abs(HorizontalWaypoint[endPos] - (drawVector.back().x - 1)) << "<=" << (height - verticalPos) << std::endl;
 					//std::cout << "to move east" << abs(HorizontalWaypoint[i] - (drawVector.back().x + 1)) << "<=" << VerticalWaypoint[i] - verticalPos << std::endl;
 					//std::cout << "and" << abs(HorizontalWaypoint[endPos] - (drawVector.back().x + 1)) << "<=" << (height - verticalPos) << std::endl;
-					if (random < 20 && abs(HorizontalWaypoint[i] - (drawVector.back().x - 1)) <= VerticalWaypoint[i] - verticalPos && abs(HorizontalWaypoint[endPos] - (drawVector.back().x - 1)) <= height - verticalPos)
+					if (random < 20 && abs(HorizontalWaypoint[i] - (drawVector.back().x - 1)) <= VerticalWaypoint[i] - verticalPos &&
+						abs(HorizontalWaypoint[endPos] - (drawVector.back().x - 1)) <= height - verticalPos)
 						drawVector.push_back(drawVector.back() + w);
-					else if (random < 40 && abs(HorizontalWaypoint[i] - (drawVector.back().x + 1)) <= VerticalWaypoint[i] - verticalPos  && abs(HorizontalWaypoint[endPos] - (drawVector.back().x + 1)) <= height - verticalPos)
+					else if (random < 40 && abs(HorizontalWaypoint[i] - (drawVector.back().x + 1)) <= VerticalWaypoint[i] - verticalPos  &&
+						abs(HorizontalWaypoint[endPos] - (drawVector.back().x + 1)) <= height - verticalPos)
 						drawVector.push_back(drawVector.back() + e);
-					else if (random < 60 && abs(HorizontalWaypoint[i] - (drawVector.back().x + 1)) <= VerticalWaypoint[i] - (verticalPos + 1) && abs(HorizontalWaypoint[endPos] - (drawVector.back().x + 1)) <= height - verticalPos + 1)
+					else if (random < 60 && abs(HorizontalWaypoint[i] - (drawVector.back().x + 1)) <= VerticalWaypoint[i] - (verticalPos + 1) &&
+						abs(HorizontalWaypoint[endPos] - (drawVector.back().x + 1)) <= height - verticalPos + 1)
 						drawVector.push_back(drawVector.back() + se);
-					else if (random < 80 && abs(HorizontalWaypoint[i] - (drawVector.back().x - 1)) <= VerticalWaypoint[i] - (verticalPos + 1) && abs(HorizontalWaypoint[endPos] - (drawVector.back().x - 1)) <= height - verticalPos + 1)
+					else if (random < 80 && abs(HorizontalWaypoint[i] - (drawVector.back().x - 1)) <= VerticalWaypoint[i] - (verticalPos + 1) &&
+						abs(HorizontalWaypoint[endPos] - (drawVector.back().x - 1)) <= height - verticalPos + 1)
 						drawVector.push_back(drawVector.back() + sw);
-					else if (abs(HorizontalWaypoint[i] - drawVector.back().x) <= VerticalWaypoint[i] - (verticalPos + 1) && abs(HorizontalWaypoint[endPos] - drawVector.back().x) <= height - verticalPos + 1)
+					else if (abs(HorizontalWaypoint[i] - drawVector.back().x) <= VerticalWaypoint[i] - (verticalPos + 1) &&
+						abs(HorizontalWaypoint[endPos] - drawVector.back().x) <= height - verticalPos + 1)
 						drawVector.push_back(drawVector.back() + s);
 				}
 			}
@@ -384,7 +390,6 @@ int curveAddition()
 					bigLightning.setPosition(sf::Vector2f(float(posVect.x) - s.x/2, float(posVect.y) - s.y/2));
 					window.draw(bigLightning);
 					growth += 0.001f;
-					
 				}
 			}
 			else
@@ -411,13 +416,13 @@ int curveAddition()
 				if (clock.getElapsedTime().asMilliseconds() > rand() % 50 + 100)
 				{
 					strikeCounter++;
-					clock.restart();
+					clock.restart(); 
 				}
 			}
 			if (strikeCounter > random2)
 			{
 				drawVector.clear();
-				GroundHit = 0;
+				GroundHit = -1;
 				strikeCounter = 0;
 				growth = 0;
 			}
