@@ -35,7 +35,7 @@ int lightningSimulation()
 	//positionArray
 
 	sf::Font font;
-	font.loadFromFile("Arial.ttf");
+	font.loadFromFile("resources/Fonts/Arial.ttf");
 
 	int chosen = 0;
 	//calculations
@@ -49,9 +49,9 @@ int lightningSimulation()
 
 	//particle line
 	sf::Texture particleTexture;
-	particleTexture.loadFromFile("lightning.png");
+	particleTexture.loadFromFile("resources/Images/lightning.png");
 	sf::Texture particleTexture2;
-	particleTexture2.loadFromFile("bigLightning.png");
+	particleTexture2.loadFromFile("resources/Images/bigLightning.png");
 	sf::RectangleShape lightningSmall(sf::Vector2f(sSize, sSize));
 	lightningSmall.setTexture(&particleTexture);
 	sf::RectangleShape lightningMedium(sf::Vector2f(mSize, mSize));
@@ -68,7 +68,7 @@ int lightningSimulation()
 	sf::Time tickRate;
 
 	sf::Texture texture;
-	texture.loadFromFile("buttontexture.png");
+	texture.loadFromFile("resources/Images/buttontexture.png");
 	sf::RectangleShape rect(sf::Vector2f(6.0f, 6.0f));
 	rect.setTexture(&texture);
 	rect.setPosition(0.1f, 400.0f);
@@ -134,7 +134,7 @@ int lightningSimulation()
 
 	float growth = 0.f;
 
-	const int numberOfWaypoints = 10;
+	const int numberOfWaypoints = 50         ;
 
 	int HorizontalWaypoint[numberOfWaypoints];
 
@@ -153,8 +153,8 @@ int lightningSimulation()
 	int min_x2 = 0;
 	int verticalLeap = 0;
 
-	int minHorizontalLeap = 0;
-	int maxHorizontalLeap = 0;
+	int minHorizontalPos = 0;
+	int maxHorizontalPos = 0;
 
 	int min_add = 0;
 	int max_add = 0;
@@ -180,12 +180,12 @@ int lightningSimulation()
 				if (event.key.code == sf::Keyboard::Space)
 				{
 					drawVector.push_back(sf::Vector2i(minStartingX + (rand() % (int)(width - minStartingX/2)), 0));
-					std::cout << "starting x: " << drawVector.back().x << std::endl;
+
 					if(GroundHit == -1)
 						GroundHit = 0;
 
 					int min_y_addition = int(1.f / numberOfWaypoints * height * 0.9f);
-					int extra_y_addition = int(1.f / numberOfWaypoints * height * 0.2f);
+					int extra_y_addition = int(1.f / numberOfWaypoints * height * 0.4f);
 
 					VerticalWaypoint[0] = min_y_addition + rand() % extra_y_addition;
 
@@ -196,14 +196,15 @@ int lightningSimulation()
 
 					verticalEndPoint = VerticalWaypoint[endPos];
 
-					HorizontalWaypoint[endPos] = drawVector.back().x - (height) + rand() % (height * 2);
+					HorizontalWaypoint[endPos] = drawVector.back().x - (height/4) + rand() % (height/2);
 
 					for (int i = endPos - 1; i > -1; i--)
 					{	
 						verticalLeap = VerticalWaypoint[i + 1] - VerticalWaypoint[i];
-						std::cout << "vleap: " << verticalLeap << std::endl;
-						maxHorizontalLeap = (VerticalWaypoint[i] * 2) - (VerticalWaypoint[i] + (HorizontalWaypoint[i + 1] - drawVector.back().x));
-						minHorizontalLeap = (VerticalWaypoint[i] * 2) + (VerticalWaypoint[i] + (HorizontalWaypoint[i + 1] - drawVector.back().x));
+						maxHorizontalPos = drawVector.back().x + VerticalWaypoint[i];
+						minHorizontalPos = drawVector.back().x - VerticalWaypoint[i];
+						int maxHorizontalLeap = maxHorizontalPos - HorizontalWaypoint[i + 1];
+						int minHorizontalLeap = minHorizontalPos - HorizontalWaypoint[i + 1];
 
 						min_add = - verticalLeap;
 						max_add = verticalLeap;
@@ -213,20 +214,18 @@ int lightningSimulation()
 
 						if (minHorizontalLeap > -verticalLeap) 
 							min_add = minHorizontalLeap;
-
-						HorizontalWaypoint[i] = HorizontalWaypoint[i + 1] + rand() % (max_add - min_add + 1) + min_add;
+						if (max_add - min_add + 1 == 0)
+							HorizontalWaypoint[i] = HorizontalWaypoint[i + 1] + rand() % (max_add - min_add + 2) + min_add;
+						else
+							HorizontalWaypoint[i] = HorizontalWaypoint[i + 1] + rand() % (max_add - min_add + 1) + min_add;
 
 						HorizontalLeaps[i] = HorizontalWaypoint[i + 1] - HorizontalWaypoint[i];
-						std::cout << "hleap: " << HorizontalWaypoint[i + 1] - HorizontalWaypoint[i] << std::endl;
+
 						VerticalLeaps[i] = VerticalWaypoint[i + 1] - VerticalWaypoint[i];
 						
 					}
 
-					std::cout << drawVector.back().x << std::endl;
-					for (int i = 0; i < numberOfWaypoints; i++) {
-						std::cout << "horizontal " << i << " " << HorizontalLeaps[i] << std::endl;
-						std::cout << "vertical " << i << " " << VerticalLeaps[i] << std::endl;
-					}
+
 				}
 			}
 			if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
@@ -340,31 +339,23 @@ int lightningSimulation()
 			{
 				for (; verticalPos < VerticalWaypoint[i];)
 				{
-					std::cout << "vertical pos: "<< verticalPos << " line: "<< __LINE__ << std::endl;
-					std::cout << "horizontal pos: " << drawVector.back().x << std::endl;
-					std::cout << "vertical target " << VerticalWaypoint[i] << std::endl;
-					std::cout << "horizontal target " << HorizontalWaypoint[i] << std::endl;
+
 					verticalPos = drawVector.back().y;
 					int random = rand() % 100;
-					//std::cout << "to move west" << abs(HorizontalWaypoint[i] - (drawVector.back().x - 1)) << "<=" << VerticalWaypoint[i] - verticalPos << std::endl;
-					//std::cout << "and" << abs(HorizontalWaypoint[endPos] - (drawVector.back().x - 1)) << "<=" << (height - verticalPos) << std::endl;
-					//std::cout << "to move east" << abs(HorizontalWaypoint[i] - (drawVector.back().x + 1)) << "<=" << VerticalWaypoint[i] - verticalPos << std::endl;
-					//std::cout << "and" << abs(HorizontalWaypoint[endPos] - (drawVector.back().x + 1)) << "<=" << (height - verticalPos) << std::endl;
-					if (random < 20 && abs(HorizontalWaypoint[i] - (drawVector.back().x - 1)) <= VerticalWaypoint[i] - verticalPos &&
-						abs(HorizontalWaypoint[endPos] - (drawVector.back().x - 1)) <= height - verticalPos)
-						drawVector.push_back(drawVector.back() + w);
-					else if (random < 40 && abs(HorizontalWaypoint[i] - (drawVector.back().x + 1)) <= VerticalWaypoint[i] - verticalPos  &&
-						abs(HorizontalWaypoint[endPos] - (drawVector.back().x + 1)) <= height - verticalPos)
-						drawVector.push_back(drawVector.back() + e);
-					else if (random < 60 && abs(HorizontalWaypoint[i] - (drawVector.back().x + 1)) <= VerticalWaypoint[i] - (verticalPos + 1) &&
-						abs(HorizontalWaypoint[endPos] - (drawVector.back().x + 1)) <= height - verticalPos + 1)
-						drawVector.push_back(drawVector.back() + se);
-					else if (random < 80 && abs(HorizontalWaypoint[i] - (drawVector.back().x - 1)) <= VerticalWaypoint[i] - (verticalPos + 1) &&
-						abs(HorizontalWaypoint[endPos] - (drawVector.back().x - 1)) <= height - verticalPos + 1)
-						drawVector.push_back(drawVector.back() + sw);
-					else if (abs(HorizontalWaypoint[i] - drawVector.back().x) <= VerticalWaypoint[i] - (verticalPos + 1) &&
-						abs(HorizontalWaypoint[endPos] - drawVector.back().x) <= height - verticalPos + 1)
-						drawVector.push_back(drawVector.back() + s);
+
+					sf::Vector2i addition;
+					if (random < 20)
+						addition = drawVector.back() + w;
+					else if (random < 40)
+						addition = drawVector.back() + e;
+					else if (random < 60)
+						addition = drawVector.back() + se;
+					else if (random < 80 )
+						addition = drawVector.back() + sw;
+					else 
+						addition = drawVector.back() + s;
+					if (abs(addition.x - HorizontalWaypoint[i]) <= VerticalWaypoint[i] - addition.y)
+						drawVector.push_back(addition);
 				}
 			}
 
@@ -380,7 +371,7 @@ int lightningSimulation()
 		
 		if (GroundHit == 1)
 		{
-			if (strikeCounter == 0 && growth < 50)
+			if (strikeCounter == 0 && growth < 100)
 			{
 				random2 = 5 + rand() % 7;
 				for (auto& posVect : drawVector)
@@ -389,7 +380,7 @@ int lightningSimulation()
 					bigLightning.setSize(s);
 					bigLightning.setPosition(sf::Vector2f(float(posVect.x) - s.x/2, float(posVect.y) - s.y/2));
 					window.draw(bigLightning);
-					growth += 0.001f;
+					growth += 0.003f;
 				}
 			}
 			else

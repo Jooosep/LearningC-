@@ -37,7 +37,7 @@ int login()
 
 	//background for window
 	sf::Texture backGround;
-	backGround.loadFromFile("background.png");
+	backGround.loadFromFile("resources/Images/background.png");
 	sf::Sprite sprite(backGround);
 
 	//menu object
@@ -45,7 +45,7 @@ int login()
 	menu.setPosition(0, 0);
 
 	//theme settings
-	gui::Theme::loadFont("MATURASC.ttf");
+	gui::Theme::loadFont("resources/Fonts/MATURASC.ttf");
 	gui::Theme::textSize = 26;
 	gui::Theme::click.textColor = sf::Color(200, 200, 200);
 	gui::Theme::click.textColorHover = sf::Color(0, 255, 0);
@@ -56,7 +56,7 @@ int login()
 	gui::Theme::PADDING = 2.f;
 
 	//error/alternative theme settings
-	gui::eTheme::loadFont("arial.ttf");
+	gui::eTheme::loadFont("resources/Fonts/arial.ttf");
 	gui::eTheme::textSize = 20;
 	gui::eTheme::click.textColor = sf::Color(255, 0, 0);
 	gui::eTheme::click.textColorHover = sf::Color(0, 255, 0, 255);
@@ -75,9 +75,9 @@ int login()
 
 	// Custom buttons with .png backgrounds
 	sf::Texture imgbutton;
-	imgbutton.loadFromFile("btnBG.png");
+	imgbutton.loadFromFile("resources/Images/btnBG.png");
 	sf::Texture imgbutton2;
-	imgbutton2.loadFromFile("btnBG2.png");
+	imgbutton2.loadFromFile("resources/Images/btnBG2.png");
 	gui::SpriteButton* loginButton = new gui::SpriteButton(imgbutton, sf::Color(200, 200, 200), "Login");
 	gui::SpriteButton* registerButton = new gui::SpriteButton(imgbutton2, sf::Color(200, 200, 200), "Register");
 
